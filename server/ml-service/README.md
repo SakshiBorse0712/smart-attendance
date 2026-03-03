@@ -7,7 +7,7 @@ Machine Learning microservice for face recognition operations in the Smart Atten
 - **Face Encoding**: Extract 128-dimensional face embeddings from images
 - **Face Detection**: Detect multiple faces in classroom photos
 - **Face Matching**: Match detected faces against student database
-- **Liveness Detection**: Anti-spoofing using passive analysis (Blur, Color Histograms)
+- **Liveness Detection**: Anti-spoofing using MediaPipe Face Mesh (Structural Integrity)
 - **Batch Operations**: Process multiple faces efficiently
 - **Stateless Design**: No database dependencies, pure ML operations
 
@@ -86,14 +86,17 @@ Detect multiple faces in an image.
 We employ a passive liveness detection mechanism to prevent presentation attacks (e.g., holding up a photo or screen).
 
 **Current Implementation:**
-1.  **Blur Check**: Uses Laplacian variance to detect unnatural blur often found in re-captured images.
-2.  **Color Diversity**: Analyzes HSV color distribution to flag images with limited gamuts (typical of screens/prints) or extreme saturation.
+1.  **Face Mesh Analysis**: Uses MediaPipe Face Mesh to attempt constructing a 3D structural model of the detected face.
+2.  **Blur Check**: Calculates Laplacian Variance to detect lack of high-frequency details (common in re-captured photos).
+3.  **Color Diversity**: Checks Standard Deviation of color channels to reject images with compressed dynamic range (screens).
 
 **Configuration:**
 - Enable/Disable via `ML_LIVENESS_CHECK=true/false` (Default: `true`).
+- `LIVENESS_BLUR_THRESHOLD`: Minimum Laplacian Variance score (Default: 100).
+- `LIVENESS_COLOR_MIN_STD`: Minimum Color Standard Deviation (Default: 15.0).
 
 ### Future Enhancements
-- Integration of a lightweight pre-trained CNN (e.g., MiniVGG) or Depth Map Estimator for robust spoof detection.
+- Integration of blink detection (challenge-response) or texture analysis.
 
 
 ### POST /api/ml/batch-match

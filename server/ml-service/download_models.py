@@ -25,11 +25,14 @@ MODEL_URLS = [
 ]
 
 MODEL_NAME = "blaze_face_short_range.tflite"
+FACE_LANDMARKER_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+FACE_LANDMARKER_NAME = "face_landmarker.task"
 
 # Determine the target directory (app/ml/)
 SCRIPT_DIR = Path(__file__).parent
 ML_DIR = SCRIPT_DIR / "app" / "ml"
 TARGET_PATH = ML_DIR / MODEL_NAME
+LANDMARKER_TARGET_PATH = ML_DIR / FACE_LANDMARKER_NAME
 
 
 def download_model():
@@ -41,38 +44,46 @@ def download_model():
     if TARGET_PATH.exists() and TARGET_PATH.stat().st_size > 0:
         print(f"✓ Model already exists at {TARGET_PATH}")
         print(f"  File size: {TARGET_PATH.stat().st_size} bytes")
-        return True
+    else:
+        # Try each URL in order
+        success = False
+        for i, url in enumerate(MODEL_URLS, 1):
+            if success: break
+            print(f"\n[Attempt {i}/{len(MODEL_URLS)}] Downloading from:")
+            print(f"  {url}")
+            try:
+                urllib.request.urlretrieve(url, TARGET_PATH)
+                if TARGET_PATH.exists() and TARGET_PATH.stat().st_size > 0:
+                    print(f"✓ Successfully downloaded model to {TARGET_PATH}")
+                    success = True
+            except Exception as e:
+                print(f"❌ Failed to download from {url}: {e}")
+        
+        if not success:
+            print("❌ Failed to download BlazeFace model from any source.")
+            return False
 
-    # Try each URL in order
-    for i, url in enumerate(MODEL_URLS, 1):
-        print(f"\n[Attempt {i}/{len(MODEL_URLS)}] Downloading from:")
-        print(f"  {url}")
-
+    # Check if landmarker model already exists
+    if LANDMARKER_TARGET_PATH.exists() and LANDMARKER_TARGET_PATH.stat().st_size > 0:
+        print(f"✓ Landmarker model already exists at {LANDMARKER_TARGET_PATH}")
+    else:
+        print(f"\nDownloading Face Landmarker from:")
+        print(f"  {FACE_LANDMARKER_MODEL_URL}")
         try:
-            # Add user agent to avoid 403 errors on some servers
-            req = urllib.request.Request(
-                url, headers={"User-Agent": "Mozilla/5.0 (MediaPipe Model Downloader)"}
-            )
-
-            # Download the model
-            with urllib.request.urlopen(req, timeout=30) as response:
-                with open(TARGET_PATH, "wb") as f:
-                    f.write(response.read())
-
-            # Verify file was created and has content
-            if TARGET_PATH.exists() and TARGET_PATH.stat().st_size > 0:
-                print(f"✓ Successfully downloaded {MODEL_NAME}")
-                print(f"  Target: {TARGET_PATH}")
-                print(f"  Size: {TARGET_PATH.stat().st_size} bytes")
-                return True
+            from urllib.request import urlretrieve # re-import to be safe or just use urllib.request
+            urllib.request.urlretrieve(FACE_LANDMARKER_MODEL_URL, LANDMARKER_TARGET_PATH)
+            if LANDMARKER_TARGET_PATH.exists() and LANDMARKER_TARGET_PATH.stat().st_size > 0:
+                print(f"✓ Successfully downloaded landmarker to {LANDMARKER_TARGET_PATH}")
             else:
-                print("✗ Error: Downloaded file is empty")
-                TARGET_PATH.unlink(missing_ok=True)
-                continue
+                print("❌ Downloaded file is empty or missing.")
+                return False
+        except Exception as e:
+            print(f"❌ Failed to download landmarker: {e}")
+            return False
 
-        except urllib.error.HTTPError as e:
-            print(f"✗ HTTP Error {e.code}: {e.reason}")
-            TARGET_PATH.unlink(missing_ok=True)
+    return True
+
+
             continue
         except urllib.error.URLError as e:
             print(f"✗ URL Error: {e.reason}")
