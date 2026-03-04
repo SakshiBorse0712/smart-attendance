@@ -62,7 +62,7 @@ async def generate_reg_options(
 
     # Store challenge as string (base64url)
     # options.challenge is bytes in newer versions of webauthn library?
-    # Actually generate_registration_options returns 
+    # Actually generate_registration_options returns
     # PublicKeyCredentialCreationOptions object.
     # The challenge is bytes. We need to store it to verify later.
     # We can store the bytes directly if using pymongo binary, or base64 encode it.

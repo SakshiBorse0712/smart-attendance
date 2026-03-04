@@ -135,8 +135,7 @@ async def upload_image_url(
         raise HTTPException(
             status_code=413,
             detail=(
-                f"Image too large. Maximum size is "
-                f"{MAX_FILE_SIZE // 1024 // 1024}MB"
+                f"Image too large. Maximum size is {MAX_FILE_SIZE // 1024 // 1024}MB"
             ),
         )
 
