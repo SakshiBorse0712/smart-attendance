@@ -36,6 +36,8 @@ from app.utils.image_validation import validate_and_decode_image
 from app.ml.face_detector import detect_faces
 from app.ml.face_encoder import get_face_embedding
 from app.ml.face_matcher import cosine_similarity
+from app.ml.liveness import is_live
+from app.core.config import settings
 
 router = APIRouter(
     prefix="/api/ml", tags=["ML"], dependencies=[Depends(verify_api_key)]
@@ -74,11 +76,10 @@ async def encode_face(request: EncodeFaceRequest):
                 error_code=ERROR_MULTIPLE_FACES,
             )
 
-        x, y, face_w, face_h = faces[0]
-        top = y
-        right = x + face_w
-        bottom = y + face_h
-        left = x
+        top, right, bottom, left = faces[0]
+        
+        face_w = right - left
+        face_h = bottom - top
 
         im_h, im_w, _ = image_np.shape
         face_area = face_w * face_h
@@ -131,19 +132,30 @@ async def detect_faces_api(request: DetectFacesRequest):
         image_area = h * w
 
         detected = []
-        for x, y, cw, ch in faces:
-            # Convert to TRBL
-            top = y
-            left = x
-            bottom = y + ch
-            right = x + cw
+        for face_tuple in faces:
+            # faces detected are already in (top, right, bottom, left) format
+            top, right, bottom, left = face_tuple
 
-            face_area = cw * ch
+            face_width = right - left
+            face_height = bottom - top
+            face_area = face_width * face_height
 
             if face_area / image_area < request.min_face_area_ratio:
                 continue
 
+            # Ensure coordinates are within image bounds
+            top = max(0, top)
+            left = max(0, left)
+            bottom = min(h, bottom)
+            right = min(w, right)
+            
             face_img = image_np[top:bottom, left:right]
+
+            # Liveness Check
+            live = True
+            if settings.ML_LIVENESS_CHECK:
+                 live = is_live(face_img)
+
             embedding = get_face_embedding(face_img)
 
             detected.append(
@@ -153,6 +165,7 @@ async def detect_faces_api(request: DetectFacesRequest):
                         top=top, right=right, bottom=bottom, left=left
                     ),
                     face_area_ratio=face_area / image_area,
+                    is_live=live
                 )
             )
 
@@ -218,6 +231,19 @@ async def batch_match(request: BatchMatchRequest):
         results = []
 
         for idx, face in enumerate(request.detected_faces):
+            # Check liveness first
+            if not getattr(face, "is_live", True):
+                results.append(
+                    BatchMatchResult(
+                        face_index=idx,
+                        student_id=None,
+                        distance=1.0,
+                        status="spoof",
+                        liveness=False,
+                    )
+                )
+                continue
+
             best_id = None
             best_score = -1.0
 
@@ -242,6 +268,7 @@ async def batch_match(request: BatchMatchRequest):
                     student_id=best_id if status == "present" else None,
                     distance=1 - best_score,
                     status=status,
+                    liveness=True,
                 )
             )
 
