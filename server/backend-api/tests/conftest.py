@@ -122,21 +122,22 @@ def mock_all_emails():
 @pytest.fixture(autouse=True)
 def disable_limiter_by_default():
     """
-    Disable rate limiting by default for all tests to prevent 429 errors 
+    Disable rate limiting by default for all tests to prevent 429 errors
     and ensuring consistent test environment.
     Individual tests like test_rate_limiting.py can override this.
     """
     from app.core.limiter import limiter
     # original_state = limiter.enabled # Assuming it might be True initially
-    
+
     # Disable by default
     limiter.enabled = False
-    
+
     yield
-    
+
     # Restore original state (important if other tests expect a specific default)
     # But for tests, we generally want it disabled unless specified
     # limiter.enabled = original_state # Don't restore blindly if we want default OFF
+
 
 @pytest_asyncio.fixture(scope="function")
 async def client(db):

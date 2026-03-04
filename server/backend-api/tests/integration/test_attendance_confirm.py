@@ -157,4 +157,3 @@ async def test_confirm_attendance_deduplicates_ids_and_writes_summary(
     assert daily_record["present"] == 1
     assert daily_record["absent"] == 1
     assert daily_record["total"] == 2
-

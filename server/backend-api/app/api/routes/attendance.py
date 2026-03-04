@@ -748,9 +748,7 @@ async def confirm_attendance(payload: AttendanceConfirm):
     all_updated_oids = set(present_oids) | set(absent_oids)
     if all_updated_oids:
         # Refetch to get updated totals
-        updated_subj = await db.subjects.find_one(
-            {"_id": subject_oid}, {"students": 1}
-        )
+        updated_subj = await db.subjects.find_one({"_id": subject_oid}, {"students": 1})
         if updated_subj and "students" in updated_subj:
             bulk_ops = []
             for s in updated_subj["students"]:

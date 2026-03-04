@@ -16,14 +16,16 @@ async def test_mark_qr_attendance_invalid_subject_id_returns_400(
     """Test that invalid subject ID returns 400"""
     student_id = ObjectId()
     # Create valid student user in DB so authentication succeeds
-    await db.users.insert_one({
-        "_id": student_id,
-        "email": "student@test.com",
-        "name": "Test Student",
-        "role": "student",
-        "is_verified": True
-    })
-    
+    await db.users.insert_one(
+        {
+            "_id": student_id,
+            "email": "student@test.com",
+            "name": "Test Student",
+            "role": "student",
+            "is_verified": True,
+        }
+    )
+
     headers = student_token_header(str(student_id))
 
     response = await client.post(
@@ -50,14 +52,16 @@ async def test_mark_qr_attendance_expired_date_returns_400(
     """Test that old QR code (not from today) is rejected"""
     student_id = ObjectId()
     # Create valid student user
-    await db.users.insert_one({
-        "_id": student_id,
-        "email": "student@test.com",
-        "name": "Test Student",
-        "role": "student",
-        "is_verified": True
-    })
-    
+    await db.users.insert_one(
+        {
+            "_id": student_id,
+            "email": "student@test.com",
+            "name": "Test Student",
+            "role": "student",
+            "is_verified": True,
+        }
+    )
+
     headers = student_token_header(str(student_id))
     yesterday = datetime.now(timezone.utc) - timedelta(days=1)
 
@@ -87,14 +91,16 @@ async def test_mark_qr_attendance_nonexistent_subject_returns_404(
     """Test that non-existent subject returns 404 or 400"""
     student_id = ObjectId()
     # Create valid student user
-    await db.users.insert_one({
-        "_id": student_id,
-        "email": "student@test.com",
-        "name": "Test Student",
-        "role": "student",
-        "is_verified": True
-    })
-    
+    await db.users.insert_one(
+        {
+            "_id": student_id,
+            "email": "student@test.com",
+            "name": "Test Student",
+            "role": "student",
+            "is_verified": True,
+        }
+    )
+
     headers = student_token_header(str(student_id))
 
     response = await client.post(
@@ -148,14 +154,16 @@ async def test_mark_qr_attendance_invalid_date_format_returns_400(
     """Test that invalid date format returns 400"""
     student_id = ObjectId()
     # Create valid student user in DB so authentication succeeds
-    await db.users.insert_one({
-        "_id": student_id,
-        "email": "student@test.com",
-        "name": "Test Student",
-        "role": "student",
-        "is_verified": True
-    })
-    
+    await db.users.insert_one(
+        {
+            "_id": student_id,
+            "email": "student@test.com",
+            "name": "Test Student",
+            "role": "student",
+            "is_verified": True,
+        }
+    )
+
     headers = student_token_header(str(student_id))
 
     response = await client.post(

@@ -25,7 +25,7 @@ async def test_verify_otp_rate_limiting():
     """Test that verify-otp endpoint is rate limited to 3 requests per minute."""
     # Use unique IP for this test to avoid interference
     transport = ASGITransport(app=app, client=("192.168.1.1", 12345))
-    
+
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Make 3 requests (should succeed or return 400 for invalid OTP)
         for i in range(3):
@@ -53,7 +53,7 @@ async def test_reset_password_rate_limiting():
     """Test that reset-password endpoint is rate limited to 3 requests per minute."""
     # Use unique IP for this test
     transport = ASGITransport(app=app, client=("192.168.1.2", 12345))
-    
+
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Make 3 requests
         for i in range(3):
@@ -87,7 +87,7 @@ async def test_verify_device_binding_otp_rate_limiting():
     """Test that verify-device-binding-otp endpoint is rate limited."""
     # Use unique IP for this test
     transport = ASGITransport(app=app, client=("192.168.1.3", 12345))
-    
+
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Make 3 requests
         for i in range(3):
@@ -121,7 +121,7 @@ async def test_forgot_password_rate_limiting():
     """Test that forgot-password endpoint is rate limited to 5 requests per minute."""
     # Use unique IP for this test
     transport = ASGITransport(app=app, client=("192.168.1.4", 12345))
-    
+
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Make 5 requests (should succeed)
         for i in range(5):
