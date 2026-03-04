@@ -70,6 +70,7 @@ async def db(db_client):
         "app.api.routes.auth.db",
         "app.api.routes.students.db",
         "app.api.routes.teacher_settings.db",
+        "app.api.routes.schedule.db",  # Added
         "app.api.deps.db",
         "app.services.attendance.db",
         "app.services.attendance_daily.db",
@@ -77,6 +78,7 @@ async def db(db_client):
         "app.services.attendance_alerts.db",
         "app.services.students.db",
         "app.services.subject_service.db",
+        "app.services.schedule_service.db", # Added
         "app.db.subjects_repo.db",
     ]
 

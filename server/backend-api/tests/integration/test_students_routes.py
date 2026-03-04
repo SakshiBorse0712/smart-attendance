@@ -2,6 +2,20 @@ import pytest
 from httpx import AsyncClient
 
 
+@pytest.fixture
+def test_user_data():
+    return {
+        "email": "student@example.com",
+        "name": "Test Student",
+        "password": "password123",
+        "role": "student",
+        "college_name": "Test College",
+        "branch": "CSE",
+        "roll": "CS101",
+        "year": "1",
+    }
+
+
 @pytest.mark.asyncio
 async def test_get_current_student_profile(client: AsyncClient, auth_token):
     # Auth header

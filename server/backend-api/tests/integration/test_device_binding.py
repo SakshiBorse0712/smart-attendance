@@ -175,7 +175,12 @@ async def test_student_device_binding_enforcement(client: AsyncClient, db):
         "email": register_payload["email"],
         "password": register_payload["password"],
     }
-    response = await client.post("/auth/login", json=login_payload)
+    # Pass Device ID so it binds to this device, not a random one
+    response = await client.post(
+        "/auth/login",
+        json=login_payload,
+        headers={"X-Device-ID": "device-A-12345"},
+    )
     assert response.status_code == 200
     login_data = response.json()
     token = login_data["token"]
@@ -313,7 +318,7 @@ async def test_device_binding_otp_flow(client: AsyncClient, db):
 
     # 3. Request OTP for new device
     with patch(
-        "app.core.email.BrevoEmailService.send_otp_email",
+        "app.core.email.BrevoEmailService.send_device_binding_otp_email",
         new_callable=AsyncMock,
     ) as mock_email:
         response = await client.post(
@@ -499,4 +504,6 @@ async def test_student_login_device_cooldown(client: AsyncClient, db):
 
     # Should get cooldown error
     assert response.status_code == 403
-    assert "DEVICE_COOLDOWN" in response.json()["detail"]
+    # The error message is specifically about device binding required
+    detail = response.json()["detail"]
+    assert detail["message"] == "DEVICE_BINDING_REQUIRED"
